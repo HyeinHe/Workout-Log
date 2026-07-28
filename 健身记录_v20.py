@@ -157,7 +157,7 @@ with t3:
                     with ca:nw=st.number_input("kg",0.0,300.0,float(s["weight"]),2.5,key=f"ew_{s['id']}",label_visibility="collapsed")
                     with cb:nr=st.number_input("次",1,50,int(s["reps"]),key=f"er_{s['id']}",label_visibility="collapsed")
                     with cc:
-                        if st.button("✓",key=f"sv_{s['id']}"):
+                        if st.button("OK",key=f"sv_{s['id']}"):
                             sb.table("sets").update({"weight":nw,"reps":int(nr)}).eq("id",s["id"]).execute()
                             st.rerun()
             if r["feeling"]:st.write(f"日记：{r['feeling']}")
@@ -232,8 +232,21 @@ with t5:
                         sb.table("records").delete().eq("username",n).execute()
                         sb.table("user_exercises").delete().eq("username",n).execute()
                         sb.table("users").delete().eq("username",n).execute();st.rerun()
+        st.divider()
+        st.subheader("发布公告")
+        ann=sb.table("settings").select("value").eq("key","announcement").execute().data
+        cur_ann=ann[0]["value"] if ann else ""
+        new_ann=st.text_area("公告内容（所有用户将在「关于」页面看到）",value=cur_ann,height=100)
+        if st.button("发布公告"):
+            sb.table("settings").upsert({"key":"announcement","value":new_ann}).execute()
+            st.success("公告已发布")
     else:
-        st.title("关于");st.write("健身记录 v20")
+        st.title("关于")
+        ann=sb.table("settings").select("value").eq("key","announcement").execute().data
+        if ann and ann[0]["value"]:
+            st.info(ann[0]["value"])
+            st.divider()
+        st.write("健身记录 v21")
         st.divider()
         st.subheader("修改密码")
         op=st.text_input("当前密码",type="password",key="op")
