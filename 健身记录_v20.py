@@ -211,7 +211,6 @@ with t5:
                 sb.table("settings").select("*").eq("key","allow_reg").execute().data
             except:
                 sb.table("settings").update({"value":"true" if reg else "false"}).eq("key","allow_reg").execute()
-            sb.table("settings").insert({"key":"allow_reg","value":"true" if reg else "false"}).execute()
             st.rerun()
         st.divider()
         users=sb.table("users").select("username").execute().data
@@ -247,7 +246,6 @@ with t5:
                 sb.table("settings").select("*").eq("key","announcement").execute().data
             except:    
                 sb.table("settings").update({"value":new_ann}).eq("key","announcement").execute()
-            sb.table("settings").insert({"key":"announcement","value":new_ann}).execute()
             st.success("公告已发布")
     else:
         st.title("关于")
