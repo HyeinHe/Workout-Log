@@ -242,7 +242,7 @@ with t5:
 if ex_ann:sb.table("settings").update({"value":new_ann}).eq("key","announcement").execute()
 else:sb.table("settings").insert({"key":"announcement","value":new_ann}).execute()
 st.success("公告已发布")
-    else:
+else:
         st.title("关于")
         ann=sb.table("settings").select("value").eq("key","announcement").execute().data
         if ann and ann[0]["value"]:
