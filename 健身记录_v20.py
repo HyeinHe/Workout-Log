@@ -207,7 +207,13 @@ with t5:
         reg_v=sb.table("settings").select("value").eq("key","allow_reg").execute().data
         cur=reg_v[0]["value"]=="true" if reg_v else True
         reg=st.checkbox("允许新用户注册",value=cur)
-        if reg!=cur:sb.table("settings").upsert({"key":"allow_reg","value":"true" if reg else "false"}).execute();st.rerun()
+                if reg!=cur:
+            ex_reg=sb.table("settings").select("*").eq("key","allow_reg").execute().data
+            if ex_reg:
+                sb.table("settings").update({"value":"true" if reg else "false"}).eq("key","allow_reg").execute()
+            else:
+                sb.table("settings").insert({"key":"allow_reg","value":"true" if reg else "false"}).execute()
+            st.rerun()
         st.divider()
         users=sb.table("users").select("username").execute().data
         st.write(f"共 {len(users)} 个用户")
@@ -232,19 +238,19 @@ with t5:
                         sb.table("records").delete().eq("username",n).execute()
                         sb.table("user_exercises").delete().eq("username",n).execute()
                         sb.table("users").delete().eq("username",n).execute();st.rerun()
-        st.divider()
+                st.divider()
         st.subheader("发布公告")
         ann=sb.table("settings").select("value").eq("key","announcement").execute().data
         cur_ann=ann[0]["value"] if ann else ""
         new_ann=st.text_area("公告内容（所有用户将在「关于」页面看到）",value=cur_ann,height=100)
         if st.button("发布公告"):
             ex_ann=sb.table("settings").select("*").eq("key","announcement").execute().data
-if ex_ann:
-    sb.table("settings").update({"value":new_ann}).eq("key","announcement").execute()
-else:
-    sb.table("settings").insert({"key":"announcement","value":new_ann}).execute()
-st.success("公告已发布")
-else:
+            if ex_ann:
+                sb.table("settings").update({"value":new_ann}).eq("key","announcement").execute()
+            else:
+                sb.table("settings").insert({"key":"announcement","value":new_ann}).execute()
+            st.success("公告已发布")
+    else:
         st.title("关于")
         ann=sb.table("settings").select("value").eq("key","announcement").execute().data
         if ann and ann[0]["value"]:
