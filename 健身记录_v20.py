@@ -25,19 +25,18 @@ if not st.session_state.user:
     st.title("健身记录")
     auth=st.radio("",["登录","注册"],horizontal=True)
     if auth=="登录":
-        u=st.text_input("用户名",key="lu");p=st.text_input("密码",type="password",key="lp")
+        u=st.text_input("用户名",key="lu"); p=st.text_input("密码",type="password",key="lp")
         if st.button("登录",use_container_width=True):
             r=sb.table("users").select("*").eq("username",u).eq("password",hash_pw(p)).execute()
-            if r.data:
-                st.session_state.user=u;st.query_params["user"]=u;st.rerun()
+            if r.data: st.session_state.user=u;st.query_params["user"]=u;st.rerun()
             else: st.error("用户名或密码错误")
     else:
         reg=sb.table("settings").select("value").eq("key","allow_reg").execute().data
         if reg and reg[0]["value"]=="false": st.warning("暂停注册，请联系管理员")
         else:
-            u=st.text_input("用户名",key="ru");p=st.text_input("密码",type="password",key="rp")
+            u=st.text_input("用户名",key="ru"); p=st.text_input("密码",type="password",key="rp")
             if st.button("注册",use_container_width=True):
-                if not u or not p:st.error("请填写完整")
+                if not u or not p: st.error("请填写完整")
                 else:
                     try: sb.table("users").insert({"username":u,"password":hash_pw(p)}).execute();st.success("注册成功")
                     except: st.error("用户已存在")
@@ -45,10 +44,9 @@ if not st.session_state.user:
 
 user=st.session_state.user
 c1,c2=st.columns([3,1])
-with c1:st.caption(f"当前用户：{user}")
+with c1: st.caption(f"当前用户：{user}")
 with c2:
-    if st.button("退出登录"):
-        st.session_state.user=None;st.query_params.clear();st.rerun()
+    if st.button("退出登录"): st.session_state.user=None;st.query_params.clear();st.rerun()
 
 labels=["记录训练","训练日记","完整记录","数据分析"]
 labels.append("管理" if user==ADMIN_USER else "关于")
@@ -57,10 +55,10 @@ t1,t2,t3,t4,t5=st.tabs(labels)
 with t1:
     st.title("今日健身记录")
     cd,cw=st.columns(2)
-    with cd:rd=st.date_input("日期",value=date.today(),key="rd")
-    with cw:bw=st.number_input("体重kg",0.0,200.0,0.0,0.5,key="bw")
+    with cd: rd=st.date_input("日期",value=date.today(),key="rd")
+    with cw: bw=st.number_input("体重kg",0.0,200.0,0.0,0.5,key="bw")
     types=st.multiselect("部位",["胸","背","腿","肩","手臂","腹","有氧"],default=["胸"])
-    edata=[];etext=[]
+    edata=[]; etext=[]
     num=st.number_input("几个动作",1,10,3,key="num")
     saved=[e["name"] for e in sb.table("user_exercises").select("name").eq("username",user).order("name").execute().data]
     for i in range(int(num)):
@@ -68,22 +66,22 @@ with t1:
         choice=st.selectbox("选择或输入",["(新动作)"]+saved,key=f"sel_{i}")
         nm=st.text_input("新动作名称",key=f"nm_{i}") if choice=="(新动作)" else choice
         ca,cb=st.columns(2)
-        with ca:se=st.number_input("组数",1,10,4,key=f"st_{i}")
-        with cb:rp=st.number_input("次数",1,30,10,key=f"rp_{i}")
+        with ca: se=st.number_input("组数",1,10,4,key=f"st_{i}")
+        with cb: rp=st.number_input("次数",1,30,10,key=f"rp_{i}")
         cc,cd2=st.columns(2)
-        with cc:wt=st.number_input("kg",0,300,0,5,key=f"wt_{i}")
-        with cd2:mu=st.checkbox("不同重量",key=f"mu_{i}")
+        with cc: wt=st.number_input("kg",0,300,0,5,key=f"wt_{i}")
+        with cd2: mu=st.checkbox("不同重量",key=f"mu_{i}")
         if mu:
             sl=[]
             for s in range(int(se)):
                 a1,a2,a3=st.columns([2,2,2])
-                with a1:st.write(f"第{s+1}组")
-                with a2:r=st.number_input("次",1,50,rp,key=f"mr_{i}_{s}")
-                with a3:w=st.number_input("kg",0,300,0,5,key=f"mw_{i}_{s}")
+                with a1: st.write(f"第{s+1}组")
+                with a2: r=st.number_input("次",1,50,rp,key=f"mr_{i}_{s}")
+                with a3: w=st.number_input("kg",0,300,0,5,key=f"mw_{i}_{s}")
                 sl.append({"reps":int(r),"weight":w})
             if nm:
                 txt="\n  ".join([f"{x['reps']}次x{'自重' if x['weight']==0 else str(x['weight'])+'kg'}" for x in sl])
-                etext.append(f"{nm}：\n  {txt}");edata.append({"name":nm,"sets":sl})
+                etext.append(f"{nm}：\n  {txt}"); edata.append({"name":nm,"sets":sl})
         else:
             if nm:
                 ws="自重" if wt==0 else f"{wt}kg"
@@ -92,18 +90,19 @@ with t1:
         st.divider()
     feel=st.text_area("日记",height=80,key="feel")
     if st.button("保存",use_container_width=True):
-        if not edata:st.warning("至少填一个动作")
+        if not edata: st.warning("至少填一个动作")
         else:
             log_text="训练部位："+fmt_type(types)+"\n"
-            if etext:log_text+="\n动作：\n"+"\n".join(etext)
-            if feel:log_text+="\n\n日记："+feel
-            prompt="""你是一个资深健身教练，以下是我今天的训练记录：\n"""+log_text+"\n请总结：\n1.训练亮点\n2.容量/负重有无问题\n3.针对性改进建议\n语气专业简洁，聚焦实操，不要无脑吹捧。"
+            if etext: log_text+="\n动作：\n"+"\n".join(etext)
+            if feel: log_text+="\n\n日记："+feel
+            prompt=("你是一个资深健身教练，以下是我今天的训练记录：\n"+log_text+
+                    "\n请总结：\n1.训练亮点\n2.容量/负重有无问题\n3.针对性改进建议\n语气专业简洁，聚焦实操，不要无脑吹捧。")
             with st.spinner("AI分析中..."):
                 resp=requests.post("https://api.deepseek.com/v1/chat/completions",
                     headers={"Authorization":"Bearer "+API_KEY,"Content-Type":"application/json"},
                     json={"model":"deepseek-v4-pro","messages":[{"role":"user","content":prompt}]})
                 result=resp.json()
-                if "choices" not in result:st.error("API错误")
+                if "choices" not in result: st.error("API错误")
                 else:
                     sm=result["choices"][0]["message"]["content"]
                     sb.table("records").insert({"username":user,"date":str(rd),"body_weight":bw,"type":fmt_type(types),"feeling":feel,"summary":sm}).execute()
@@ -111,15 +110,15 @@ with t1:
                     for ex in edata:
                         er=sb.table("exercises").insert({"record_id":rid,"name":ex["name"]}).execute()
                         eid=er.data[0]["id"]
-                        for s in ex["sets"]:sb.table("sets").insert({"exercise_id":eid,"weight":s["weight"],"reps":s["reps"]}).execute()
+                        for s in ex["sets"]: sb.table("sets").insert({"exercise_id":eid,"weight":s["weight"],"reps":s["reps"]}).execute()
                         try: sb.table("user_exercises").insert({"username":user,"name":ex["name"]}).execute()
                         except: pass
-                    st.success(f"{rd} 已保存");st.markdown(sm)
+                    st.success(f"{rd} 已保存"); st.markdown(sm)
 
 with t2:
     st.title("训练日记")
     recs=sb.table("records").select("*").eq("username",user).order("date",desc=True).order("id",desc=True).execute().data
-    if not recs:st.info("暂无记录")
+    if not recs: st.info("暂无记录")
     else:
         for r in recs:
             exs=sb.table("exercises").select("*").eq("record_id",r["id"]).execute().data
@@ -128,17 +127,16 @@ with t2:
             for ex in exs:
                 ss=sb.table("sets").select("*").eq("exercise_id",ex["id"]).execute().data
                 st.markdown(f"**{ex['name']}**")
-                for s in ss:st.markdown(f"  {s['reps']}次x{'自重' if s['weight']==0 else str(s['weight'])+'kg'}")
+                for s in ss: st.markdown(f"  {s['reps']}次x{'自重' if s['weight']==0 else str(s['weight'])+'kg'}")
             sk=f"sk_{r['id']}"
             if r["feeling"]:
-                with st.expander("感受"):st.write(r["feeling"])
-            if st.button("编辑日记",key=f"fe_{r['id']}"):
-                st.session_state[sk]=True
+                with st.expander("感受"): st.write(r["feeling"])
+            if st.button("编辑日记",key=f"fe_{r['id']}"): st.session_state[sk]=True
             if st.session_state.get(sk,False):
                 nf=st.text_area("",value=r.get("feeling",""),key=f"nf_{r['id']}")
                 if st.button("保存",key=f"sv_{r['id']}"):
                     sb.table("records").update({"feeling":nf}).eq("id",r["id"]).execute()
-                    st.session_state[sk]=False;st.rerun()
+                    st.session_state[sk]=False; st.rerun()
             st.divider()
 
 with t3:
@@ -154,19 +152,19 @@ with t3:
                 st.write(f"**{ex['name']}**：{txt}")
                 for s in ss:
                     ca,cb,cc=st.columns([2,2,1])
-                    with ca:nw=st.number_input("kg",0.0,300.0,float(s["weight"]),2.5,key=f"ew_{s['id']}",label_visibility="collapsed")
-                    with cb:nr=st.number_input("次",1,50,int(s["reps"]),key=f"er_{s['id']}",label_visibility="collapsed")
+                    with ca: nw=st.number_input("kg",0.0,300.0,float(s["weight"]),2.5,key=f"ew_{s['id']}",label_visibility="collapsed")
+                    with cb: nr=st.number_input("次",1,50,int(s["reps"]),key=f"er_{s['id']}",label_visibility="collapsed")
                     with cc:
                         if st.button("OK",key=f"sv_{s['id']}"):
                             sb.table("sets").update({"weight":nw,"reps":int(nr)}).eq("id",s["id"]).execute()
                             st.rerun()
-            if r["feeling"]:st.write(f"日记：{r['feeling']}")
-            if r["summary"]:st.markdown(f"**AI总结：**\n{r['summary']}")
+            if r["feeling"]: st.write(f"日记：{r['feeling']}")
+            if r["summary"]: st.markdown(f"**AI总结：**\n{r['summary']}")
             if st.button("删除",key=f"del_{idx}"):
                 exs2=sb.table("exercises").select("id").eq("record_id",r["id"]).execute().data
-                for ex in exs2:sb.table("sets").delete().eq("exercise_id",ex["id"]).execute()
+                for ex in exs2: sb.table("sets").delete().eq("exercise_id",ex["id"]).execute()
                 sb.table("exercises").delete().eq("record_id",r["id"]).execute()
-                sb.table("records").delete().eq("id",r["id"]).execute();st.rerun()
+                sb.table("records").delete().eq("id",r["id"]).execute(); st.rerun()
 
 with t4:
     st.title("数据分析")
@@ -180,7 +178,8 @@ with t4:
                 prs[ex["name"]]={"weight":ss[0]["weight"],"reps":ss[0]["reps"],"date":r["date"]}
     if prs:
         st.subheader("个人记录")
-        for n,i in sorted(prs.items(),key=lambda x:x[1]["weight"],reverse=True):st.markdown(f"**{n}**：{i['weight']}kg x {i['reps']}次（{i['date']}）")
+        for n,i in sorted(prs.items(),key=lambda x:x[1]["weight"],reverse=True):
+            st.markdown(f"**{n}**：{i['weight']}kg x {i['reps']}次（{i['date']}）")
     ct=st.radio("趋势",["重量","体重"],horizontal=True)
     if ct=="重量":
         rows=[]
@@ -188,17 +187,17 @@ with t4:
             exs=sb.table("exercises").select("*").eq("record_id",r["id"]).execute().data
             for ex in exs:
                 ss=sb.table("sets").select("*").eq("exercise_id",ex["id"]).gt("weight",0).execute().data
-                for s in ss:rows.append({"date":r["date"],"动作":ex["name"],"重量":s["weight"]})
+                for s in ss: rows.append({"date":r["date"],"动作":ex["name"],"重量":s["weight"]})
         if rows:
-            import pandas as pd;df=pd.DataFrame(rows)
+            import pandas as pd; df=pd.DataFrame(rows)
             sel=st.selectbox("动作",df["动作"].unique())
-            ex=df[df["动作"]==sel].copy();ex["date"]=pd.to_datetime(ex["date"]);ex=ex.sort_values("date")
+            ex=df[df["动作"]==sel].copy(); ex["date"]=pd.to_datetime(ex["date"]); ex=ex.sort_values("date")
             st.line_chart(ex.set_index("date")[["重量"]])
     else:
         rows=[{"date":r["date"],"体重":r["body_weight"]} for r in recs if r["body_weight"]>0]
         if rows:
-            import pandas as pd;df=pd.DataFrame(rows)
-            df["date"]=pd.to_datetime(df["date"]);df=df.sort_values("date")
+            import pandas as pd; df=pd.DataFrame(rows)
+            df["date"]=pd.to_datetime(df["date"]); df=df.sort_values("date")
             st.line_chart(df.set_index("date")[["体重"]])
 
 with t5:
@@ -207,12 +206,10 @@ with t5:
         reg_v=sb.table("settings").select("value").eq("key","allow_reg").execute().data
         cur=reg_v[0]["value"]=="true" if reg_v else True
         reg=st.checkbox("允许新用户注册",value=cur)
-                if reg!=cur:
+        if reg!=cur:
             ex_reg=sb.table("settings").select("*").eq("key","allow_reg").execute().data
-            if ex_reg:
-                sb.table("settings").update({"value":"true" if reg else "false"}).eq("key","allow_reg").execute()
-            else:
-                sb.table("settings").insert({"key":"allow_reg","value":"true" if reg else "false"}).execute()
+            if ex_reg: sb.table("settings").update({"value":"true" if reg else "false"}).eq("key","allow_reg").execute()
+            else: sb.table("settings").insert({"key":"allow_reg","value":"true" if reg else "false"}).execute()
             st.rerun()
         st.divider()
         users=sb.table("users").select("username").execute().data
@@ -227,43 +224,40 @@ with t5:
                     with st.expander(f"重置{n}的密码"):
                         np=st.text_input("新密码",type="password",key=f"rp_{n}")
                         if st.button("确认",key=f"cr_{n}"):
-                            if np:sb.table("users").update({"password":hash_pw(np)}).eq("username",n).execute();st.success("已重置")
+                            if np: sb.table("users").update({"password":hash_pw(np)}).eq("username",n).execute();st.success("已重置")
                 with cb:
                     if st.button("删除用户",key=f"du_{n}"):
-                        rids=[r_id["id"] for r_id in sb.table("records").select("id").eq("username",n).execute().data]
+                        rids=[rid["id"] for rid in sb.table("records").select("id").eq("username",n).execute().data]
                         for rid2 in rids:
                             exs2=sb.table("exercises").select("id").eq("record_id",rid2).execute().data
-                            for ex2 in exs2:sb.table("sets").delete().eq("exercise_id",ex2["id"]).execute()
+                            for ex2 in exs2: sb.table("sets").delete().eq("exercise_id",ex2["id"]).execute()
                             sb.table("exercises").delete().eq("record_id",rid2).execute()
                         sb.table("records").delete().eq("username",n).execute()
                         sb.table("user_exercises").delete().eq("username",n).execute()
-                        sb.table("users").delete().eq("username",n).execute();st.rerun()
-                st.divider()
+                        sb.table("users").delete().eq("username",n).execute(); st.rerun()
+        st.divider()
         st.subheader("发布公告")
         ann=sb.table("settings").select("value").eq("key","announcement").execute().data
         cur_ann=ann[0]["value"] if ann else ""
         new_ann=st.text_area("公告内容（所有用户将在「关于」页面看到）",value=cur_ann,height=100)
         if st.button("发布公告"):
             ex_ann=sb.table("settings").select("*").eq("key","announcement").execute().data
-            if ex_ann:
-                sb.table("settings").update({"value":new_ann}).eq("key","announcement").execute()
-            else:
-                sb.table("settings").insert({"key":"announcement","value":new_ann}).execute()
+            if ex_ann: sb.table("settings").update({"value":new_ann}).eq("key","announcement").execute()
+            else: sb.table("settings").insert({"key":"announcement","value":new_ann}).execute()
             st.success("公告已发布")
     else:
         st.title("关于")
         ann=sb.table("settings").select("value").eq("key","announcement").execute().data
-        if ann and ann[0]["value"]:
-            st.info(ann[0]["value"])
-            st.divider()
-        st.write("健身记录 v21")
+        if ann and ann[0]["value"]: st.info(ann[0]["value"])
+        st.divider()
+        st.write("健身记录 v22")
         st.divider()
         st.subheader("修改密码")
         op=st.text_input("当前密码",type="password",key="op")
         np=st.text_input("新密码",type="password",key="np")
         if st.button("修改密码",use_container_width=True):
-            if not op or not np:st.error("请填写完整")
+            if not op or not np: st.error("请填写完整")
             else:
                 ck=sb.table("users").select("*").eq("username",user).eq("password",hash_pw(op)).execute()
-                if not ck.data:st.error("当前密码错误")
-                else:sb.table("users").update({"password":hash_pw(np)}).eq("username",user).execute();st.success("已修改")
+                if not ck.data: st.error("当前密码错误")
+                else: sb.table("users").update({"password":hash_pw(np)}).eq("username",user).execute();st.success("已修改")
