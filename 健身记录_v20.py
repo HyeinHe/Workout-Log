@@ -239,8 +239,10 @@ with t5:
         new_ann=st.text_area("公告内容（所有用户将在「关于」页面看到）",value=cur_ann,height=100)
         if st.button("发布公告"):
             ex_ann=sb.table("settings").select("*").eq("key","announcement").execute().data
-if ex_ann:sb.table("settings").update({"value":new_ann}).eq("key","announcement").execute()
-else:sb.table("settings").insert({"key":"announcement","value":new_ann}).execute()
+if ex_ann:
+    sb.table("settings").update({"value":new_ann}).eq("key","announcement").execute()
+else:
+    sb.table("settings").insert({"key":"announcement","value":new_ann}).execute()
 st.success("公告已发布")
 else:
         st.title("关于")
